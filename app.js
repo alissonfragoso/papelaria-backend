@@ -1,64 +1,55 @@
+const bodyParser = require('body-parser');
 const express = require('express')
 const app = express();
-const usuario =[
-    {
-    id:1,
-    nome:"Bleno",
-    email:"bleno@gmail.com",
-    senha:"123",
-
-    },
-    {
-    id:2,
-    nome:"Felipe",
-    email:"felipe@gmail.com",
-    senha:"123",
-
-    },
-    {
-    id:3,
-    nome:"Alisson",
-    email:"alisson@gmail.com",
-    senha:"123",
-
-    },
-    {
-    id:4,
-    nome:"Carlos",
-    email:"Cerlos@gmail.com",
-    senha:"123",
-
-    },
-]
+app.use(express.json());
+const cors = require("cors");
+app.use(cors());
+const morgan = require("morgan");
+app.use(morgan("dev"));
 
 
-app.get("/",(req,res,next)=>{
-    
-    res.json(usuario)
+const rotaUsuario = require("./routes/rotaUsuario");
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+
+    res.header(
+        "Access-Control-Allow-Headers",
+        "Origin,X-Requested-with, Content-type, Accept,Autorization"
+
+    )
+    if (req.method === "OPTIONS") {
+        res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
+        return res.status(200).send({});
+
+    };
+    next();
 });
 
-app.get("/usuario",(req,res,next)=>{
-    let nomes=[];
-    usuario.map((linha)=>{
-        nomes.push({
-            nome:linha.nome,
-            email:linha.email
-        })
-    })
-    res.json(nomes)
+
+
+app.use("/usuario", rotaUsuario)
+
+
+
+
+app.use((req, res, next) => {
+
+    const erro = new Error("Não encontrado!!");
+    erro.status(404);
+
+});
+app.use((error, req, res, netx) => {
+
+    res.status(error.status || 500);
+    return res.json({
+        error: {
+            mensagem: erro.message
+        }
+    });
+
 });
 
-app.post("/usuario",(req,res,next)=>{
-  const id = req.body.id;
-  const nome = req.body.nome;
-  const email = req.body.email;
-  const senha = req.body.senha;
-  const dados=({
-    id,
-    nome,
-    email,
-    senha
-  })
-console                         
-})
 module.exports = app
