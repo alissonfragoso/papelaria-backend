@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const sqlite3 = require("sqlite3").verbose();
+
 const usuario =[
     {
     id:1,
@@ -48,11 +50,21 @@ router.get("/nomes",(req,res,next)=>{
     res.json(nomes)
 });
 
-router.post("/",(req,res,next)=>{
+router.post("/",(req,res,next) => {
+    const db = new sqlite3.Database("database.db")
 
-    const id = req.body.id;
-    
-    res.send({id:id});              
+    const {nome,email,senha} = req.body;
+
+    db.serialize(()=>{
+      
+        db.run("CREATE TABLE IF NOT EXISTS usuario(id INTEGER PRIMARY KEY AUTOINCREMENT,nome TEXT email TEXT UNIQUE,  senha TEXT)")
+        const insertUsuario = db.prepare("INSERT INTO usuario(nome,email,senha) VALUES (?,?,?)")
+        insertUsuario.run(nome,email,senha);
+        insertUsuario.finalize()
+    })
+
+
+    res.status(200).send({mensagem:"Salvo com Sucesso!!!!!!!"});              
 
 })
 

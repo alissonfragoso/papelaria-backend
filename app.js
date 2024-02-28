@@ -6,11 +6,14 @@ const cors = require("cors");
 app.use(cors());
 const morgan = require("morgan");
 app.use(morgan("dev"));
+app.use(bodyParser.urlencoded({ extended: false }));
+
+
 
 
 const rotaUsuario = require("./routes/rotaUsuario");
-const bodyParser = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
+
+
 
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
@@ -46,7 +49,7 @@ app.use((error, req, res, netx) => {
     res.status(error.status || 500);
     return res.json({
         error: {
-            mensagem: erro.message
+            mensagem: error.message
         }
     });
 
