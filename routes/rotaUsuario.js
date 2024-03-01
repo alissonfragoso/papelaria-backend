@@ -34,20 +34,38 @@ const usuario = [
 ]
 
 
-router.get("/", (req, res, next) => {
+router.get("/:id", (req, res, next) => {
 
-    db.all("SELECT * FROM usuario", (error,rows)=>{
-        if(error){
-           return res.status(500).send({
-            error:error.message
-           })
+    const {id} = req.params;
+    db.all("SELECT * FROM usuario WHERE id=?",[id], (error, rows) => {
+        if (error) {
+            return res.status(500).send({
+                error: error.message
+            })
         }
+        console.log(rows)
         res.status(200).send({
-            messagem:"Aqui está a lista de Usuários",
-            usuarios:rows   
+            messagem: "Aqui está a lista de Usuários",
+            usuario: rows
         })
     })
-    
+
+});
+
+router.get("/", (req, res, next) => {
+
+    db.all("SELECT * FROM usuario", (error, rows) => {
+        if (error) {
+            return res.status(500).send({
+                error: error.message
+            })
+        }
+        res.status(200).send({
+            messagem: "Aqui está a lista de Usuários",
+            usuarios: rows
+        })
+    })
+
 });
 
 router.get("/nomes", (req, res, next) => {
@@ -62,7 +80,7 @@ router.get("/nomes", (req, res, next) => {
 });
 
 router.post("/", (req, res, next) => {
-   
+
 
     const { nome, email, senha } = req.body;
 
@@ -80,7 +98,7 @@ router.post("/", (req, res, next) => {
         db.close((err) => {
             if (err) {
                 return res.status(304).send(err.message);
- 
+
             }
         })
 
@@ -90,30 +108,66 @@ router.post("/", (req, res, next) => {
 
 })
 
+// router.put("/", (req, res, next) => {
+
+//     const { id, nome, email, senha } = req.body;
+
+//     db.run("UPDATE usuario SET nome=?,email=?,senha=? WHERE id=?",
+    
+//     [nome, email, senha, id], function (error) {
+//             db.all("SELECT * FROM usuario", (error, rows) => {
+
+//                 if (error) {
+//                     return res.status(500).send({
+//                         error: error.message
+//                     })
+//                 }
+//                 res.status(200).send({
+//                     messagem: "Casdastro Alterado com Sucesso!",
+                  
+//                 })
+//             })
+
+//         })
+
+// })
+
 router.put("/", (req, res, next) => {
+    const { id, nome, email, senha } = req.body;
 
-    const id = req.body.id;
+    db.run(" UPDATE usuario SET nome = ?, email = ?, senha = ? WHERE id = ?",
+        [nome, email, senha, id], function (error) {
 
-    res.send({ id: id });
+            if (error) {
+                return res.status(500).send({
+                    error: error.message
+                });
+            }
+            res.status(200).send({
+                mensagem: "Cadastro alterado com sucesso",
+            })
 
-})
+        })
+
+});
+
 router.delete("/:id", (req, res, next) => {
 
-    const {id} = req.params;
-    db.run("DELETE  FROM usuario WHERE  id = ?",id, (error,)=>{
+    const { id } = req.params;
+    db.run("DELETE  FROM usuario WHERE  id = ?", id, (error,) => {
 
-        if(error){
+        if (error) {
             return res.status(500).send({
-             error:error.message
+                error: error.message
             })
-         }
-         res.status(200).send({
-            messagem:"Cadastros deletado com suscesso!!",
-           
+        }
+        res.status(200).send({
+            messagem: "Cadastros deletado com suscesso!!",
+
         })
     });
 
-    
+
 
 })
 module.exports = router;
