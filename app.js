@@ -38,6 +38,7 @@ app.use("/usuario", rotaUsuario)
 
 
 
+
 app.use((req, res, next) => {
 
     const erro = new Error("Não encontrado!!");

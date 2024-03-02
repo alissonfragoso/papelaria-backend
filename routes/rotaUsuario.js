@@ -2,36 +2,7 @@ const express = require("express");
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("database.db");
-const usuario = [
-    {
-        id: 1,
-        nome: "Bleno",
-        email: "bleno@gmail.com",
-        senha: "123",
 
-    },
-    {
-        id: 2,
-        nome: "Felipe",
-        email: "felipe@gmail.com",
-        senha: "123",
-
-    },
-    {
-        id: 3,
-        nome: "Alisson",
-        email: "alisson@gmail.com",
-        senha: "123",
-
-    },
-    {
-        id: 4,
-        nome: "Carlos",
-        email: "Cerlos@gmail.com",
-        senha: "123",
-
-    },
-]
 
 
 router.get("/:id", (req, res, next) => {
@@ -68,6 +39,28 @@ router.get("/", (req, res, next) => {
 
 });
 
+
+router.post("/logon", (req, res, next) => {
+
+    const { email, senha } = req.body;
+
+    db.all("SELECT  email, senha  FROM  usuario WHERE email='?' and senha='?' ",[email,senha], (error, rows) => {
+        if (error) {
+            return res.status(500).send({
+                error: error.message
+            })
+        }
+      if(rows.length>0)
+        res.status(200).send({login:"Dados de login estão corretos" });
+      
+        else
+        res.status(404).send({login:"Não possível logar" }); 
+
+    })
+
+});
+
+// -----------------------------------------------
 router.get("/nomes", (req, res, next) => {
     let nomes = [];
     usuario.map((linha) => {
