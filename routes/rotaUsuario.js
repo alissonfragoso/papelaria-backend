@@ -1,4 +1,5 @@
 const express = require("express");
+const { default: Logon } = require("../../papapelaria_front/src/pages/logon");
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("database.db");
@@ -24,7 +25,7 @@ router.get("/:id", (req, res, next) => {
 });
 
 router.get("/", (req, res, next) => {
-
+    
     db.all("SELECT * FROM usuario", (error, rows) => {
         if (error) {
             return res.status(500).send({
@@ -44,17 +45,16 @@ router.post("/logon", (req, res, next) => {
 
     const { email, senha } = req.body;
 
-    db.all("SELECT  email, senha  FROM  usuario WHERE email='?' and senha='?' ",[email,senha], (error, rows) => {
+    db.all("SELECT id,nome, email, senha  FROM  usuario WHERE email='?' and senha='?' ",[email,senha], (error, rows) => {
         if (error) {
             return res.status(500).send({
                 error: error.message
             })
         }
-      if(rows.length>0)
-        res.status(200).send({login:"Dados de login estão corretos" });
-      
-        else
-        res.status(404).send({login:"Não possível logar" }); 
+      if(rows.length>0){
+          res.status(200).send({mensagem:"Dados de login estão corretos", usuarios:rows  });
+      }
+       
 
     })
 
