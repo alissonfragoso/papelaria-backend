@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
+
 const db = new sqlite3.Database("database.db");
-const jwt = require('jsonwebtoken'); // Para geração de token JWT
+
 
 
 
@@ -11,7 +12,7 @@ const jwt = require('jsonwebtoken'); // Para geração de token JWT
 router.get("/:id", (req, res, next) => {
 
     const { id } = req.params;
-    db.all("SELECT * FROM usuario WHERE id=?", [id], (error, rows) => {
+    db.all("SELECT * FROM produto WHERE id=?", [id], (error, rows) => {
         if (error) {
             return res.status(500).send({
                 error: error.message
@@ -19,7 +20,7 @@ router.get("/:id", (req, res, next) => {
         }
         console.log(rows)
         res.status(200).send({
-            messagem: "Aqui está a lista de Usuários",
+            messagem: "Aqui está a lista de Produtos",
             usuario: rows
         })
     })
@@ -30,7 +31,7 @@ router.get("/:id", (req, res, next) => {
 
 router.get("/", (req, res, next) => {
 
-    db.all("SELECT * FROM usuario", (error, rows) => {
+    db.all("SELECT * FROM produto", (error, rows) => {
         if (error) {
             return res.status(500).send({
                 error: error.message
@@ -43,53 +44,6 @@ router.get("/", (req, res, next) => {
     })
 
 });
-
-// -----------------------------------------------
-
-
-
-    router.post('/login', (req, res, next) => {
-        const { email, senha } = req.body;
-    
-        db.get(`SELECT * FROM usuario WHERE email = ?`, [email], (error, usuario) => {
-            if (error) {
-                return res.status(500).send({
-                    error: error.message,
-                    response: null
-                });
-            }
-    
-            if (!usuario) {
-                return res.status(401).send({
-                    mensagem: "Usuário não encontrado."
-                });
-            }
-    
-            bcrypt.compare(senha, usuario.senha, (bcryptError, result) => {
-                if (bcryptError) {
-                    return res.status(500).send({
-                        error: bcryptError.message,
-                        response: null
-                    });
-                }
-    
-                if (!result) {
-                    return res.status(401).send({
-                        mensagem: "Senha incorreta."
-                    });
-                }
-    
-                // Gerar token JWT
-                const token = jwt.sign({ id: usuario.id, email: usuario.email }, 'secreto', { expiresIn: '1h' });
-    
-                res.status(200).send({
-                    mensagem: "Login bem sucedido.",
-                    token: token
-                });
-            });
-        });
-    });
-
 
 
 // -----------------------------------------------
