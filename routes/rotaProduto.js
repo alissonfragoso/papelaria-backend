@@ -1,9 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
-
 const db = new sqlite3.Database("database.db");
-
 
 
 
@@ -21,7 +19,7 @@ router.get("/:id", (req, res, next) => {
         console.log(rows)
         res.status(200).send({
             messagem: "Aqui está a lista de Produtos",
-            usuario: rows
+            produto: rows
         })
     })
 
@@ -38,47 +36,42 @@ router.get("/", (req, res, next) => {
             })
         }
         res.status(200).send({
-            messagem: "Aqui está a lista de Usuários",
-            usuarios: rows
+            messagem: "Aqui está a lista de Produtos",
+            produto: rows
         })
     })
 
 });
 
-
+// -----------------------------------------------
+function validateDecricao(descricao) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(String(descricao).toLowerCase());
+}
+// -----------------------------------------------
 // -----------------------------------------------
 
-router.get("/nomes", (req, res, next) => {
-    let nomes = [];
-    usuario.map((linha) => {
-        nomes.push({
-            nome: linha.nome,
-            email: linha.email
-        })
-    })
-    res.json(nomes)
-});
-
-// -----------------------------------------------
-
-router.post('/', (req, res, next) =>
-{
-    const { nome, email, senha } = req.body;
+router.post('/', (req, res, next) => {
+    const { status, descricao, estoque_minimo, estoque_maximo } = req.body;
 
     // Validação dos campos
     let msg = [];
-    if (!nome || nome.length < 3) {
-        msg.push({ mensagem: "Nome inválido! Deve ter pelo menos 3 caracteres." });
+    if (!status || status.length < 1 ) {
+        msg.push({ mensagem: "Status vaziu! Deve ter pelo menos 1 caracteres." });
     }
-    if (!email || !validateEmail(email)) {
-        msg.push({ mensagem: "E-mail inválido!" });
+    if (!descricao || !validateDecricao(descricao)) {
+        msg.push({ mensagem: "Descrição inválido!, Voçê está cadastrando o mesmo Produto!" });
     }
-    if (!senha || senha.length < 6) {
-        msg.push({ mensagem: "Senha inválida! Deve ter pelo menos 6 caracteres." });
+    if (!estoque_minimo  ) {
+        msg.push({ mensagem: "O campo Estoque Máximo não pode estar vazio." });
     }
+    if (!estoque_maximo) {
+        msg.push({ mensagem: "O campo Estoque Máximo não pode estar vazio." });
+    }
+    
     if (msg.length > 0) {
         return res.status(400).send({
-            mensagem: "Falha ao cadastrar usuário.",
+            mensagem: "Falha ao cadastrar Produto!.",
             erros: msg
         });
     }
@@ -127,15 +120,6 @@ router.post('/', (req, res, next) =>
         });
     });
 });
-
-// Função para validar formato de e-mail
-
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
-}
-
-// -----------------------------------------------
 
 
 router.put("/", (req, res, next) => {

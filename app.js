@@ -16,6 +16,7 @@ const rotaProduto = require("./routes/rotaProduto");
 
 
 
+
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
 
@@ -36,6 +37,7 @@ app.use((req, res, next) => {
 
 app.use("/usuario", rotaUsuario)
 app.use("/produto", rotaProduto)
+
 
 
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("database.db");
 const jwt = require('jsonwebtoken'); // Para geração de token JWT
-
+const bcrypt = require('bcrypt');
 
 
 
@@ -38,7 +38,7 @@ router.get("/", (req, res, next) => {
         }
         res.status(200).send({
             messagem: "Aqui está a lista de Usuários",
-            usuarios: rows
+            usuario: rows
         })
     })
 
@@ -48,47 +48,47 @@ router.get("/", (req, res, next) => {
 
 
 
-    router.post('/login', (req, res, next) => {
-        const { email, senha } = req.body;
-    
-        db.get(`SELECT * FROM usuario WHERE email = ?`, [email], (error, usuario) => {
-            if (error) {
+router.post('/login', (req, res, next) => {
+    const { email, senha } = req.body;
+
+    db.get(`SELECT * FROM usuario WHERE email = ?`, [email], (error, usuario) => {
+        if (error) {
+            return res.status(500).send({
+                error: error.message,
+                response: null
+            });
+        }
+
+        if (!usuario) {
+            return res.status(401).send({
+                mensagem: "Usuário não encontrado."
+            });
+        }
+
+        bcrypt.compare(senha, usuario.senha, (bcryptError, result) => {
+            if (bcryptError) {
                 return res.status(500).send({
-                    error: error.message,
+                    error: bcryptError.message,
                     response: null
                 });
             }
-    
-            if (!usuario) {
+
+            if (!result) {
                 return res.status(401).send({
-                    mensagem: "Usuário não encontrado."
+                    mensagem: "Senha incorreta."
                 });
             }
-    
-            bcrypt.compare(senha, usuario.senha, (bcryptError, result) => {
-                if (bcryptError) {
-                    return res.status(500).send({
-                        error: bcryptError.message,
-                        response: null
-                    });
-                }
-    
-                if (!result) {
-                    return res.status(401).send({
-                        mensagem: "Senha incorreta."
-                    });
-                }
-    
-                // Gerar token JWT
-                const token = jwt.sign({ id: usuario.id, email: usuario.email }, 'secreto', { expiresIn: '1h' });
-    
-                res.status(200).send({
-                    mensagem: "Login bem sucedido.",
-                    token: token
-                });
+
+            // Gerar token JWT
+            const token = jwt.sign({ id: usuario.id, email: usuario.email }, 'secreto', { expiresIn: '1h' });
+
+            res.status(200).send({
+                mensagem: "Login bem sucedido.",
+                token: token
             });
         });
     });
+});
 
 
 
@@ -107,8 +107,7 @@ router.get("/nomes", (req, res, next) => {
 
 // -----------------------------------------------
 
-router.post('/', (req, res, next) =>
-{
+router.post('/', (req, res, next) => {
     const { nome, email, senha } = req.body;
 
     // Validação dos campos
