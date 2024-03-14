@@ -42,15 +42,15 @@ router.get("/", (req, res, next) => {
     })
 
 });
+// -----------------------------------------------------------------
 
-// -----------------------------------------------
 // function validateDecricao(descricao) {
 //     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 //     return re.test(String(descricao).toLowerCase());
 
-// || !validateDecricao(descricao) 
-// // }
-// -----------------------------------------------
+// || !validateDecricao(descricao)  
+// }
+
 // -----------------------------------------------
 
 router.post('/', (req, res, next) => {
@@ -120,6 +120,10 @@ router.post('/', (req, res, next) => {
     });
 
 });
+
+// --------------------------------------------------------------------------
+
+
 
 router.put("/", (req, res, next) => {
     const { id, status, descricao, estoque_minimo, estoque_maximo } = req.body;
