@@ -14,6 +14,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const rotaUsuario = require("./routes/rotaUsuario");
 const rotaProduto = require("./routes/rotaProduto");
 const rotaEntrada = require("./routes/rotaEntrada");
+const rotaSaida = require("./routes/rotaSaida");
 
 
 
@@ -39,6 +40,7 @@ app.use((req, res, next) => {
 app.use("/usuario", rotaUsuario)
 app.use("/produto", rotaProduto)
 app.use("/entrada", rotaEntrada)
+app.use("/saida", rotaSaida)
 
 
 

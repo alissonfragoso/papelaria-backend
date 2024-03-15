@@ -3,13 +3,13 @@ const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("database.db");
 
-// db.run("(CREATE TABLE IF NOT EXISTS entrada (id INTEGER PRIMARY KEY AUTOINCREMENT, id_produto, qtde REAL, valor_unitario REAL, data_entrada DATE)", (createTableError) => {
-//     if (createTableError) {
-//         return res.status(500).send({
-//             error: createTableError.message
-//         });
-//     }
-// })
+db.run("CREATE TABLE IF NOT EXISTS saida (id INTEGER PRIMARY KEY AUTOINCREMENT, id_produto, qtde REAL, valor_unitario REAL, data_saida DATE)", (createTableError) => {
+    if (createTableError) {
+        return res.status(500).send({
+            error: createTableError.message
+        });
+    }
+})
 
 
 
@@ -18,15 +18,15 @@ const db = new sqlite3.Database("database.db");
 
 router.get(`/`, (req, res, next) => {
 
-    db.all('SELECT * FROM entrada INNER JOIN produto ON entrada.id_produto = produto.id; ', (error, rows) => {
+    db.all('SELECT * FROM saida INNER JOIN produto ON saida.id_produto = produto.id; ', (error, rows) => {
         if (error) {
             return res.status(500).send({
                 error: error.message
             })
         }
         res.status(200).send({
-            messagem: "Aqui está a lista de Entrada",
-            entrada: rows
+            messagem: "Aqui está a lista de Saida",
+            saida: rows
         })
     })
 
@@ -35,11 +35,11 @@ router.get(`/`, (req, res, next) => {
 
     // Verifica se a descrição do produto já está cadastrada
     router.post(`/`, (req, res) => {
-        const { id_produto, qtde, valor_unitario, data_entrada } = req.body;
+        const { id_produto, qtde, valor_unitario, data_saida } = req.body;
     console.log(req.body)
-        // Inserir os dados da entrada na nova tabela_
-        db.run(`INSERT INTO entrada (id_produto, qtde, valor_unitario, data_entrada) VALUES (?, ?, ?, ?)`,
-            [id_produto, qtde, valor_unitario, data_entrada],
+        // Inserir os dados da saida na nova tabela_
+        db.run(`INSERT INTO saida (id_produto, qtde, valor_unitario, data_saida) VALUES (?, ?, ?, ?)`,
+            [id_produto, qtde, valor_unitario, data_saida],
             function (insertError) {
                 if (insertError) {
                     console.log(insertError)
@@ -50,13 +50,13 @@ router.get(`/`, (req, res, next) => {
                 }
     
                 res.status(201).send({
-                    mensagem: "Entrada Registrada!",
-                    entrada: {
+                    mensagem: "Saida Registrada!",
+                 saida: {
                         id: this.lastID,
                         id_produto: id_produto,
                         qtde: qtde,
                         valor_unitario: valor_unitario,
-                        data_entrada: data_entrada
+                        data_saida: data_saida
                     }
                 });
             });
@@ -87,7 +87,7 @@ router.delete(`/:id`, (req, res, next) => {
 
     const { id } = req.params;
 
-    db.run(`DELETE  FROM entrada WHERE  id = ?`, id, (error,) => {
+    db.run(`DELETE  FROM saida WHERE  id = ?`, id, (error,) => {
 
         if (error) {
             
@@ -96,7 +96,7 @@ router.delete(`/:id`, (req, res, next) => {
             })
         }
         res.status(200).send({
-            messagem: "entrada deletada com suscesso!",
+            messagem: "saida deletada com suscesso!",
 
         })
     });
