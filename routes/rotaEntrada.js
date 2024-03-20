@@ -18,7 +18,17 @@ const db = new sqlite3.Database("database.db");
 
 router.get(`/`, (req, res, next) => {
 
-    db.all('SELECT * FROM entrada INNER JOIN produto ON entrada.id_produto = produto.id; ', (error, rows) => {
+    db.all(`SELECT 
+
+    entrada.id as id, 
+    entrada.id_produto as id_produto,
+    entrada.qtde as qtde,
+    entrada.data_entrada as data_entrada,
+    produto.descricao as descricao,
+    entrada.valor_unitario as valor_unitario  
+    
+
+    FROM entrada INNER JOIN produto ON entrada.id_produto = produto.id; `, (error, rows) => {
         if (error) {
             return res.status(500).send({
                 error: error.message
@@ -33,34 +43,35 @@ router.get(`/`, (req, res, next) => {
 });
 
 
-    // Verifica se a descrição do produto já está cadastrada
-    router.post(`/`, (req, res) => {
-        const { id_produto, qtde, valor_unitario, data_entrada } = req.body;
+// Verifica se a descrição do produto já está cadastrada
+router.post(`/`, (req, res) => {
+    const { id_produto, qtde, valor_unitario, data_entrada } = req.body;
     console.log(req.body)
-        // Inserir os dados da entrada na nova tabela_
-        db.run(`INSERT INTO entrada (id_produto, qtde, valor_unitario, data_entrada) VALUES (?, ?, ?, ?)`,
-            [id_produto, qtde, valor_unitario, data_entrada],
-            function (insertError) {
-                if (insertError) {
-                    console.log(insertError)
-                    return res.status(500).send({
-                        error: insertError.message,
-                        response: null
-                    });
-                }
-    
-                res.status(201).send({
-                    mensagem: "Entrada Registrada!",
-                    entrada: {
-                        id: this.lastID,
-                        id_produto: id_produto,
-                        qtde: qtde,
-                        valor_unitario: valor_unitario,
-                        data_entrada: data_entrada
-                    }
+    // Inserir os dados da entrada na nova tabela_
+    db.run(`INSERT INTO entrada (id_produto, qtde, valor_unitario, data_entrada) VALUES (?, ?, ?, ?)`,
+        [id_produto, qtde, valor_unitario, data_entrada],
+        function (insertError) {
+            if (insertError) {
+                console.log(insertError)
+                return res.status(500).send({
+                    error: insertError.message,
+                    response: null
                 });
+            }
+            atualizarEstoque(id_produto, qtde , valor_unitario);
+            
+            res.status(201).send({
+                mensagem: "Entrada Registrada!",
+                entrada: {
+                    id: this.lastID,
+                    id_produto: id_produto,
+                    qtde: qtde,
+                    valor_unitario: valor_unitario,
+                    data_entrada: data_entrada
+                }
             });
-    });
+        });
+});
 // --------------------------------------------------------------------------
 
 
@@ -90,7 +101,7 @@ router.delete(`/:id`, (req, res, next) => {
     db.run(`DELETE  FROM entrada WHERE  id = ?`, id, (error,) => {
 
         if (error) {
-            
+
             return res.status(500).send({
                 error: error.message
             })
@@ -103,5 +114,35 @@ router.delete(`/:id`, (req, res, next) => {
 
 
 
-})
+});
+
+
+function atualizarEstoque(id_produto, qtde, valor_unitario) {
+    db.all(`SELECT * FROM estoque WHERE id_produto = ?`, [id_produto], (error, rows) => {
+        if (error) {
+            return false;
+        }
+        if (rows.length > 0) {
+            let quantidade = rows[0].qtde;
+            quantidade = parseFloat(quantidade) + parseFloat(qtde);
+
+            db.run("UPDATE estoque SET qtde=?, valor_unitario=? WHERE id_produto=?",
+                [quantidade, id_produto, valor_unitario], (error) => {
+                    if (erro) {
+                        return false
+                    }
+
+                });
+        } else {
+            db.serialize(() => {
+                
+                const insertEstoque = db.prepare("INSERT INFO estoque(id_produto, qtde, valor_unitario) VALUES(?,?,?)");
+                insertEstoque.run(id_produto, qtde, valor_unitario);
+                insertEstoque.finalize()
+
+            })
+        }
+    });
+}
+
 module.exports = router;
