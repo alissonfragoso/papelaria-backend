@@ -5,6 +5,11 @@ const db = new sqlite3.Database("database.db");
 const jwt = require('jsonwebtoken'); // Para geração de token JWT
 const bcrypt = require('bcrypt');
 
+db.run("CREATE TABLE IF NOT EXISTS usuario (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, email TEXT UNIQUE, senha TEXT)", (createTableError) => {
+    if (createTableError) {
+        return false;
+    }
+});
 
 
 

@@ -4,6 +4,14 @@ const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("database.db");
 
 
+db.run("CREATE TABLE IF NOT EXISTS produto (id INTEGER PRIMARY KEY AUTOINCREMENT, status TEXT, descricao TEXT UNIQUE, estoque_minimo INTEGER, estoque_maximo INTEGER)",
+(createTableError) => {
+    if (createTableError) {
+        return false;
+    }
+});
+
+
 
 
 

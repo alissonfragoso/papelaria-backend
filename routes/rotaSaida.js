@@ -5,9 +5,7 @@ const db = new sqlite3.Database("database.db");
 
 db.run("CREATE TABLE IF NOT EXISTS saida (id INTEGER PRIMARY KEY AUTOINCREMENT, id_produto, qtde REAL, valor_unitario REAL, data_saida DATE)", (createTableError) => {
     if (createTableError) {
-        return res.status(500).send({
-            error: createTableError.message
-        });
+        return false;
     }
 })
 
@@ -27,8 +25,11 @@ router.get(`/`, (req, res, next) => {
     produto.descricao as descricao,
     saida.valor_unitario as valor_unitario
     
-    
-    FROM saida INNER JOIN produto ON saida.id_produto = produto.id; `, (error, rows) => {
+    FROM saida
+
+     INNER JOIN produto 
+     
+     ON saida.id_produto = produto.id `, (error, rows) => {
         if (error) {
             return res.status(500).send({
                 error: error.message
@@ -44,10 +45,12 @@ router.get(`/`, (req, res, next) => {
 
 
 // Verifica se a descrição do produto já está cadastrada
-router.post(`/saida`, (req, res) => {
+router.post(`/`, (req, res) => {
     const { id_produto, qtde, valor_unitario, data_saida } = req.body;
-    console.log(req.body)
+    
+
     // Inserir os dados da saida na nova tabela_
+
     db.run(`INSERT INTO saida (id_produto, qtde, valor_unitario, data_saida) VALUES (?, ?, ?, ?)`,
         [id_produto, qtde, valor_unitario, data_saida],
         function (insertError) {
@@ -58,8 +61,8 @@ router.post(`/saida`, (req, res) => {
                     response: null
                 });
             }
-            atualizarEstoque(id_produto, qtde , valor_unitario);
-            
+            atualizarEstoque(id_produto, qtde, valor_unitario);
+
             res.status(201).send({
                 mensagem: "Saida Registrada!",
                 saida: {
@@ -124,19 +127,19 @@ function atualizarEstoque(id_produto, qtde, valor_unitario) {
         }
         if (rows.length > 0) {
             let quantidade = rows[0].qtde;
-            quantidade = parseFloat(quantidade) + parseFloat(qtde);
+            quantidade = parseFloat(quantidade) - parseFloat(qtde);
 
             db.run("UPDATE estoque SET qtde=?, valor_unitario=? WHERE id_produto=?",
-                [quantidade, id_produto, valor_unitario], (error) => {
-                    if (erro) {
-                        return false
+                [quantidade,  valor_unitario, id_produto], (error) => {
+                    if (error) {
+                        return false;
                     }
 
                 });
         } else {
             db.serialize(() => {
-                
-                const insertEstoque = db.prepare("INSERT INFO estoque(id_produto, qtde, valor_unitario) VALUES(?,?,?)");
+
+                const insertEstoque = db.prepare("INSERT INTO estoque(id_produto, qtde, valor_unitario) VALUES(?,?,?)");
                 insertEstoque.run(id_produto, qtde, valor_unitario);
                 insertEstoque.finalize()
 

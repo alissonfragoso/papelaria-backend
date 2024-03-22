@@ -15,6 +15,8 @@ const rotaUsuario = require("./routes/rotaUsuario");
 const rotaProduto = require("./routes/rotaProduto");
 const rotaEntrada = require("./routes/rotaEntrada");
 const rotaSaida = require("./routes/rotaSaida");
+const rotaEstoque = require("./routes/rotaEstoque");
+
 
 
 
@@ -41,6 +43,7 @@ app.use("/usuario", rotaUsuario)
 app.use("/produto", rotaProduto)
 app.use("/entrada", rotaEntrada)
 app.use("/saida", rotaSaida)
+app.use("/estoque", rotaEstoque)
 
 
 

@@ -3,13 +3,11 @@ const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("database.db");
 
-// db.run("(CREATE TABLE IF NOT EXISTS entrada (id INTEGER PRIMARY KEY AUTOINCREMENT, id_produto, qtde REAL, valor_unitario REAL, data_entrada DATE)", (createTableError) => {
-//     if (createTableError) {
-//         return res.status(500).send({
-//             error: createTableError.message
-//         });
-//     }
-// })
+db.run("(CREATE TABLE IF NOT EXISTS entrada (id INTEGER PRIMARY KEY AUTOINCREMENT, id_produto, qtde REAL, valor_unitario REAL, data_entrada DATE)", (createTableError) => {
+    if (createTableError) {
+        return false;
+    }
+})
 
 
 
@@ -45,21 +43,25 @@ router.get(`/`, (req, res, next) => {
 
 // Verifica se a descrição do produto já está cadastrada
 router.post(`/`, (req, res) => {
+
     const { id_produto, qtde, valor_unitario, data_entrada } = req.body;
-    console.log(req.body)
-    // Inserir os dados da entrada na nova tabela_
+    // Inserir os dados da entrada na nova tabela
+
     db.run(`INSERT INTO entrada (id_produto, qtde, valor_unitario, data_entrada) VALUES (?, ?, ?, ?)`,
         [id_produto, qtde, valor_unitario, data_entrada],
         function (insertError) {
             if (insertError) {
+
                 console.log(insertError)
+
                 return res.status(500).send({
                     error: insertError.message,
                     response: null
                 });
             }
-            atualizarEstoque(id_produto, qtde , valor_unitario);
             
+            atualizarEstoque(id_produto, qtde, valor_unitario);
+
             res.status(201).send({
                 mensagem: "Entrada Registrada!",
                 entrada: {
@@ -72,6 +74,7 @@ router.post(`/`, (req, res) => {
             });
         });
 });
+
 // --------------------------------------------------------------------------
 
 
@@ -98,7 +101,7 @@ router.delete(`/:id`, (req, res, next) => {
 
     const { id } = req.params;
 
-    db.run(`DELETE  FROM entrada WHERE  id = ?`, id, (error,) => {
+    db.run(`DELETE  FROM entrada WHERE  id = ?`, [id], (error,) => {
 
         if (error) {
 
@@ -107,7 +110,7 @@ router.delete(`/:id`, (req, res, next) => {
             })
         }
         res.status(200).send({
-            messagem: "entrada deletada com suscesso!",
+            messagem: "Entrada deletada com suscesso!",
 
         })
     });
@@ -117,7 +120,8 @@ router.delete(`/:id`, (req, res, next) => {
 });
 
 
-function atualizarEstoque(id_produto, qtde, valor_unitario) {
+function atualizarEstoque(id_produto, qtde, valor_unitario)
+ {
     db.all(`SELECT * FROM estoque WHERE id_produto = ?`, [id_produto], (error, rows) => {
         if (error) {
             return false;
@@ -127,16 +131,16 @@ function atualizarEstoque(id_produto, qtde, valor_unitario) {
             quantidade = parseFloat(quantidade) + parseFloat(qtde);
 
             db.run("UPDATE estoque SET qtde=?, valor_unitario=? WHERE id_produto=?",
-                [quantidade, id_produto, valor_unitario], (error) => {
-                    if (erro) {
-                        return false
+                [quantidade,  valor_unitario, id_produto], (error) => {
+                    if (error) {
+                        return false;
                     }
 
                 });
         } else {
             db.serialize(() => {
                 
-                const insertEstoque = db.prepare("INSERT INFO estoque(id_produto, qtde, valor_unitario) VALUES(?,?,?)");
+                const insertEstoque = db.prepare("INSERT INTO estoque(id_produto, qtde, valor_unitario) VALUES(?,?,?)");
                 insertEstoque.run(id_produto, qtde, valor_unitario);
                 insertEstoque.finalize()
 
